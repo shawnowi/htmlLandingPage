@@ -37,7 +37,7 @@ class Modal extends React.Component {
     async isWalletConnectedMobile() {
         var accounts = []
         var chainID = -1
-        
+
         if (this.walletConnector.connected) {
             var acctWalletConnect = await this.walletConnector.accounts
             if (acctWalletConnect !== undefined) {
@@ -176,20 +176,20 @@ class Modal extends React.Component {
 
         if (!this.walletConnector.connected) {
             this.walletConnector = new window.WalletConnect.default({
-                bridge: 'https://bridge.walletconnect.org'
+                bridge: 'https://bridge.walletconnect.org', qrcodeModal: window.WalletConnectQRCodeModal.default
             })
         }
         if (!this.walletConnector.connected) { 
             await this.walletConnector.createSession()
         }
-        window.WalletConnectQRCodeModal.default.open(this.walletConnector.uri, async () => {
-            if (!this.walletConnector.connected) {
-                this.setState({ popupCode: 7 })
-                await this.walletConnector.killSession()
-            }
-        });
+        // window.WalletConnectQRCodeModal.default.open(this.walletConnector.uri, async () => {
+        //     if (!this.walletConnector.connected) {
+        //         this.setState({ popupCode: 7 })
+        //         await this.walletConnector.killSession()
+        //     }
+        // });
         await this.walletConnector.on("connect", async (error, payload) => {
-            window.WalletConnectQRCodeModal.default.close();
+            // window.WalletConnectQRCodeModal.default.close();
             this.setState({ wallet: 1 })
             if (await this.isWalletConnected()) {
                 if (this.isTargetChainID()) {
