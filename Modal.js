@@ -209,21 +209,14 @@ class Modal extends React.Component {
     }
     
     async openModal() {
-
-        if(isMobile) {
-            console.log('true')
+        this.setState({ modalIsOpened: true })
+        if (await this.isWalletConnected()) {
+            if (this.isTargetChainID()) {
+                //await this.getWalletBalance()
+            }
         } else {
-            console.log("false")
+            this.setState({ popupCode: 6 })
         }
-
-        // this.setState({ modalIsOpened: true })
-        // if (await this.isWalletConnected()) {
-        //     if (this.isTargetChainID()) {
-        //         //await this.getWalletBalance()
-        //     }
-        // } else {
-        //     this.setState({ popupCode: 6 })
-        // }
     }
 
     async buyToken() {
