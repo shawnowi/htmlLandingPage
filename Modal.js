@@ -35,6 +35,9 @@ class Modal extends React.Component {
     }
 
     async isWalletConnectedMobile() {
+        var accounts = []
+        var chainID = -1
+        
         if (this.walletConnector.connected) {
             var acctWalletConnect = await this.walletConnector.accounts
             if (acctWalletConnect !== undefined) {
