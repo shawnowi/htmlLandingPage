@@ -32,7 +32,6 @@ class Modal extends React.Component {
     }
 
     async isWalletConnectedMobile() {
-        this.setState({ debug: this.state.debug + ' d2.2.1' })
         return false
     }
 
@@ -41,14 +40,10 @@ class Modal extends React.Component {
         var accounts = []
         var chainID = -1
 
-        this.setState({ debug: this.state.debug + ' d2.1' })
-
         if (this.state.isMobile === true) {
-            this.setState({ debug: this.state.debug + ' d2.2' })
             return this.isWalletConnectedMobile()
-            this.setState({ debug: this.state.debug + ' d2.3' })
         }
-        this.setState({ debug: this.state.debug + ' d2.4' })
+
         switch (this.state.wallet) {
             case -1:
                 var acctWeb3 = await this.web3Connector.eth.getAccounts()
@@ -149,64 +144,37 @@ class Modal extends React.Component {
     }
 
     async walletConnect() {
-        this.setState({ debug: this.state.debug + ' d7.1' })
         this.setState({ popupCode: -1 })
-        this.setState({ debug: this.state.debug + ' d7.2' })
-    
+
         if (!this.walletConnector.connected) {
-            this.setState({ debug: this.state.debug + ' d7.3' })
             this.walletConnector = new window.WalletConnect.default({
                 bridge: 'https://bridge.walletconnect.org'
             })
-            this.setState({ debug: this.state.debug + ' d7.4' })
         }
-        this.setState({ debug: this.state.debug + ' d7.5' })
         if (!this.walletConnector.connected) { 
-            this.setState({ debug: this.state.debug + ' d7.6' })
             await this.walletConnector.createSession()
-            this.setState({ debug: this.state.debug + ' d7.7' })
         }
-        this.setState({ debug: this.state.debug + ' d7.8' })
         window.WalletConnectQRCodeModal.default.open(this.walletConnector.uri, async () => {
-            this.setState({ debug: this.state.debug + ' d7.9' })
             if (!this.walletConnector.connected) {
-                this.setState({ debug: this.state.debug + ' d7.10' })
                 this.setState({ popupCode: 7 })
-                this.setState({ debug: this.state.debug + ' d7.11' })
                 await this.walletConnector.killSession()
-                this.setState({ debug: this.state.debug + ' d7.12' })
             }
         });
-        this.setState({ debug: this.state.debug + ' d7.13' })
         await this.walletConnector.on("connect", async (error, payload) => {
-            this.setState({ debug: this.state.debug + ' d7.14' })
             window.WalletConnectQRCodeModal.default.close();
-            this.setState({ debug: this.state.debug + ' d7.15' })
             this.setState({ wallet: 1 })
-            this.setState({ debug: this.state.debug + ' d7.16' })
             if (await this.isWalletConnected()) {
-                this.setState({ debug: this.state.debug + ' d7.17' })
                 if (this.isTargetChainID()) {
-                    this.setState({ debug: this.state.debug + ' d7.18' })
                     //await this.getWalletBalance()
                 }
-                this.setState({ debug: this.state.debug + ' d7.19' })
             } else {
-                this.setState({ debug: this.state.debug + ' d7.20' })
                 this.setState({ popupCode: 7 })
-                this.setState({ debug: this.state.debug + ' d7.21' })
             }
-            this.setState({ debug: this.state.debug + ' d7.22' })
         })
-        this.setState({ debug: this.state.debug + ' d7.23' })
         await this.walletConnector.on("disconnect", async (error, payload) => {
-            this.setState({ debug: this.state.debug + ' d7.24' })
             this.setState({ wallet: -1 })
-            this.setState({ debug: this.state.debug + ' d7.25' })
             this.setState({ popupCode: 7 })
-            this.setState({ debug: this.state.debug + ' d7.26' })
         })
-        this.setState({ debug: this.state.debug + ' d7.27' })
     }
 
     async closeModal() {
@@ -217,35 +185,26 @@ class Modal extends React.Component {
 
         var md = new MobileDetect(window.navigator.userAgent);
 
-        console.log(md.mobile())
+        if (md.mobile() === null) {
+            this.setState({ debug: "not mobile" })
+        } else {
+            this.setState({ debug: "is mobile" })
+        }
 
-        this.setState({ debug: md.mobile() })
+        return 
 
-        //return 
-
-        this.setState({ debug: this.state.debug + ' d1' })
         this.setState({ modalIsOpened: true })
-        this.setState({ debug: this.state.debug + ' d2' })
         if (await this.isWalletConnected()) {
-            this.setState({ debug: this.state.debug + ' d3' })
             if (this.isTargetChainID()) {
-                this.setState({ debug: this.state.debug + ' d4' })
                 //await this.getWalletBalance()
             }
-            this.setState({ debug: this.state.debug + ' d5' })
         } else {
-            this.setState({ debug: this.state.debug + ' d6' })
             if (this.web3Connector === undefined) {
-                this.setState({ debug: this.state.debug + ' d7' })
                 this.walletConnect()
-                this.setState({ debug: this.state.debug + ' d8' })
             } else {
-                this.setState({ debug: this.state.debug + ' d9' })
                 this.setState({ popupCode: 6 })
-                this.setState({ debug: this.state.debug + ' d10' })
             }
         }
-        this.setState({ debug: this.state.debug + ' d11' })
     }
 
     async buyToken() {
