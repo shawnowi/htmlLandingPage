@@ -2,27 +2,26 @@
 <html>
   <head>
     <meta charset="UTF-8" />
+    <link rel="stylesheet" href="Modal.css">
     <title>Add React in One Minute</title>
   </head>
   <body>
 
-    <h2>Add React in One Minute</h2>
-    <p>This page demonstrates using React with no build tooling.</p>
-    <p>React is loaded as a script tag.</p>
-
-    <!-- We will put our React component inside this div. -->
+    <!-- react component goes here. -->
     <div id="root"></div>
 
-    <!-- Load React. -->
-    <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+    <!-- load node modules -->
     <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone@7.14.7/babel.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/client@1.4.1/dist/umd/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/qrcode-modal@1.4.1/dist/umd/index.min.js"></script>
     
-    <!-- Load our React component. -->
-    <script src="Modal.js"></script>
 
+    <!-- load component. -->
+    <script type="text/babel" data-type="module" src="Modal.js"></script>
+    
   </body>
 </html>
