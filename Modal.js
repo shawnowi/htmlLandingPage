@@ -10,6 +10,7 @@ class Modal extends React.Component {
     constructor(props) { 
         super(props)
         this.state = {
+            isMobile: false,
             debug: '',
             modalIsOpened: false,
             wallet: -1,
@@ -27,6 +28,8 @@ class Modal extends React.Component {
             this.web3Connector = new Web3(window.ethereum)
         } else if (window.web3) {
             this.web3Connector = new Web3(web3.currentProvider)
+        } else {
+            this.setState({ isMobile: true })
         }
     }
 
@@ -42,7 +45,7 @@ class Modal extends React.Component {
 
         this.setState({ debug: this.state.debug + ' d2.1' })
 
-        if (this.web3Connector === undefined) {
+        if (this.state.isMobile) {
             this.setState({ debug: this.state.debug + ' d2.2' })
             return this.isWalletConnectedMobile()
             this.setState({ debug: this.state.debug + ' d2.3' })
