@@ -30,6 +30,10 @@ class Modal extends React.Component {
         }
     }
 
+    async isWalletConnectedMobile() {
+        return false
+    }
+
     async isWalletConnected() {
         var debug = ''
         var accounts = []
@@ -37,9 +41,14 @@ class Modal extends React.Component {
 
         try {
 
+            if (this.web3Connector === undefined) {
+                return isWalletConnectedMobile()
+            }
+
             debug = debug + ' d1'
             switch (this.state.wallet) {
                 case -1:
+
                     debug = debug + ' d2'
                     var acctWeb3 = await this.web3Connector.eth.getAccounts()
                     debug = debug + ' d3'
@@ -200,14 +209,21 @@ class Modal extends React.Component {
     }
     
     async openModal() {
-        this.setState({ modalIsOpened: true })
-        if (await this.isWalletConnected()) {
-            if (this.isTargetChainID()) {
-                //await this.getWalletBalance()
-            }
+
+        if(isMobile) {
+            console.log('true')
         } else {
-            this.setState({ popupCode: 6 })
+            console.log("false")
         }
+
+        // this.setState({ modalIsOpened: true })
+        // if (await this.isWalletConnected()) {
+        //     if (this.isTargetChainID()) {
+        //         //await this.getWalletBalance()
+        //     }
+        // } else {
+        //     this.setState({ popupCode: 6 })
+        // }
     }
 
     async buyToken() {
