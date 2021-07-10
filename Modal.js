@@ -7,10 +7,13 @@ class Modal extends React.Component {
     _targetChainID = 97
     _targetRPC = "https://data-seed-prebsc-1-s1.binance.org:8545/"
     
-    constructor(props) { 
+    constructor(props) {
         super(props)
+
+        var md = new MobileDetect(window.navigator.userAgent);
+
         this.state = {
-            isMobile: false,
+            isMobile: (md.mobile() !== null),
             debug: '',
             modalIsOpened: false,
             wallet: -1,
@@ -183,16 +186,12 @@ class Modal extends React.Component {
     
     async openModal() {
 
-        var md = new MobileDetect(window.navigator.userAgent);
-
-        if (md.mobile() === null) {
-            this.setState({ debug: "not mobile" })
-        } else {
+        if (this.state.isMobile) {
             this.setState({ debug: "is mobile" })
+        } else {
+            this.setState({ debug: "not mobile" })
         }
-
-        return 
-
+        
         this.setState({ modalIsOpened: true })
         if (await this.isWalletConnected()) {
             if (this.isTargetChainID()) {
