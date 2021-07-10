@@ -10,6 +10,7 @@ class Modal extends React.Component {
     constructor(props) { 
         super(props)
         this.state = {
+            debug: '',
             modalIsOpened: false,
             wallet: -1,
             chainID: -1,
@@ -30,58 +31,81 @@ class Modal extends React.Component {
     }
 
     async isWalletConnected() {
-
+        var debug = ''
         var accounts = []
         var chainID = -1
 
-        switch (this.state.wallet) {
-            case -1:
-                var acctWeb3 = await this.web3Connector.eth.getAccounts()
-                if (acctWeb3 !== undefined) {
-                    if (acctWeb3.length !== 0) {
-                        accounts = acctWeb3
-                        chainID = await this.web3Connector.eth.getChainId()
-                        this.setState({ wallet: 0 })
-                    } else {
-                        if (this.walletConnector.connected) {
-                            var acctWalletConnect = await this.walletConnector.accounts
-                            if (acctWalletConnect !== undefined) {
-                                if (acctWalletConnect.length !== 0) {
-                                    accounts = acctWalletConnect
-                                    chainID = await this.walletConnector.chainId
-                                    this.setState({ wallet: 1 })
+        try {
+
+            debug = debug + ' d1'
+            switch (this.state.wallet) {
+                case -1:
+                    debug = debug + ' d2'
+                    var acctWeb3 = await this.web3Connector.eth.getAccounts()
+                    debug = debug + ' d3'
+                    if (acctWeb3 !== undefined) {
+                        debug = debug + ' d4'
+                        if (acctWeb3.length !== 0) {
+                            debug = debug + ' d5'
+                            accounts = acctWeb3
+                            debug = debug + ' d6'
+                            chainID = await this.web3Connector.eth.getChainId()
+                            debug = debug + ' d7'
+                            this.setState({ wallet: 0 })
+                            debug = debug + ' d8'
+                        } else {
+                            if (this.walletConnector.connected) {
+                                debug = debug + ' d9'
+                                var acctWalletConnect = await this.walletConnector.accounts
+                                debug = debug + ' d10'
+                                if (acctWalletConnect !== undefined) {
+                                    debug = debug + ' d11'
+                                    if (acctWalletConnect.length !== 0) {
+                                        debug = debug + ' d12'
+                                        accounts = acctWalletConnect
+                                        debug = debug + ' d13'
+                                        chainID = await this.walletConnector.chainId
+                                        debug = debug + ' d14'
+                                        this.setState({ wallet: 1 })
+                                        debug = debug + ' d15'
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                break
-            case 0:
-                accounts = await this.web3Connector.eth.getAccounts()
-                chainID = await this.web3Connector.eth.getChainId()
-                break
-            case 1:
-                if (this.walletConnector.connected) {
-                    accounts = await this.walletConnector.accounts
-                    chainID = await this.walletConnector.chainId
-                }
-                break
-            default:
-                break
-        }
-
-        if (accounts !== undefined) {
-            if (accounts.length !== 0) {
-                this.setState({ accounts: accounts })
-                this.setState({ chainID: chainID })
-                return true
+                    debug = debug + ' d16'
+                    break
+                case 0:
+                    accounts = await this.web3Connector.eth.getAccounts()
+                    chainID = await this.web3Connector.eth.getChainId()
+                    break
+                case 1:
+                    if (this.walletConnector.connected) {
+                        accounts = await this.walletConnector.accounts
+                        chainID = await this.walletConnector.chainId
+                    }
+                    break
+                default:
+                    break
             }
-        }
 
-        this.setState({ accounts: [] })
-        this.setState({ chainID:-1 }) 
-        this.setState({ wallet:-1 }) 
-        return false
+            if (accounts !== undefined) {
+                if (accounts.length !== 0) {
+                    this.setState({ accounts: accounts })
+                    this.setState({ chainID: chainID })
+                    return true
+                }
+            }
+
+            this.setState({ accounts: [] })
+            this.setState({ chainID:-1 }) 
+            this.setState({ wallet:-1 }) 
+            return false
+        } catch(error) {
+            debug = debug + ' ' + error.description
+        } finally {
+            this.setState({ debug: debug })
+        }
     }
 
     isTargetChainID() {
@@ -289,8 +313,10 @@ class Modal extends React.Component {
         }
 
         return (
-           
-            <button onClick={() => this.openModal()}>Buy Token</button>
+            <div>
+                <p>{this.state.debug}</p>
+                <button onClick={() => this.openModal()}>Buy Token</button>
+            </div>
         )
     }
 }
