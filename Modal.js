@@ -185,20 +185,13 @@ class Modal extends React.Component {
     }
     
     async openModal() {
-
-        if (this.state.isMobile) {
-            this.setState({ debug: "is mobile" })
-        } else {
-            this.setState({ debug: "not mobile" })
-        }
-        
         this.setState({ modalIsOpened: true })
         if (await this.isWalletConnected()) {
             if (this.isTargetChainID()) {
                 //await this.getWalletBalance()
             }
         } else {
-            if (this.web3Connector === undefined) {
+            if (this.state.isMobile) {
                 this.walletConnect()
             } else {
                 this.setState({ popupCode: 6 })
