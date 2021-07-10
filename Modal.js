@@ -40,7 +40,7 @@ class Modal extends React.Component {
         var chainID = -1
 
         if (this.web3Connector === undefined) {
-            return isWalletConnectedMobile()
+            return this.isWalletConnectedMobile()
         }
 
         switch (this.state.wallet) {
