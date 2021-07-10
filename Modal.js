@@ -31,6 +31,7 @@ class Modal extends React.Component {
     }
 
     async isWalletConnectedMobile() {
+        this.setState({ debug: this.state.debug + ' d2.2.1' })
         return false
     }
 
@@ -39,10 +40,14 @@ class Modal extends React.Component {
         var accounts = []
         var chainID = -1
 
-        if (this.web3Connector === undefined) {
-            return this.isWalletConnectedMobile()
-        }
+        this.setState({ debug: this.state.debug + ' d2.1' })
 
+        if (this.web3Connector === undefined) {
+            this.setState({ debug: this.state.debug + ' d2.2' })
+            return this.isWalletConnectedMobile()
+            this.setState({ debug: this.state.debug + ' d2.3' })
+        }
+        this.setState({ debug: this.state.debug + ' d2.4' })
         switch (this.state.wallet) {
             case -1:
                 var acctWeb3 = await this.web3Connector.eth.getAccounts()
