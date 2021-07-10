@@ -28,8 +28,6 @@ class Modal extends React.Component {
             this.web3Connector = new Web3(window.ethereum)
         } else if (window.web3) {
             this.web3Connector = new Web3(web3.currentProvider)
-        } else {
-            this.setState({ isMobile: true })
         }
     }
 
@@ -39,13 +37,13 @@ class Modal extends React.Component {
     }
 
     async isWalletConnected() {
-        var debug = ''
+
         var accounts = []
         var chainID = -1
 
         this.setState({ debug: this.state.debug + ' d2.1' })
 
-        if (this.state.isMobile) {
+        if (this.state.isMobile === true) {
             this.setState({ debug: this.state.debug + ' d2.2' })
             return this.isWalletConnectedMobile()
             this.setState({ debug: this.state.debug + ' d2.3' })
@@ -216,6 +214,15 @@ class Modal extends React.Component {
     }
     
     async openModal() {
+
+        var md = new MobileDetect(window.navigator.userAgent);
+
+        console.log(md.mobile())
+
+        this.setState({ debug: md.mobile() })
+
+        //return 
+
         this.setState({ debug: this.state.debug + ' d1' })
         this.setState({ modalIsOpened: true })
         this.setState({ debug: this.state.debug + ' d2' })
