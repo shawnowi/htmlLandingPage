@@ -146,7 +146,7 @@ class Modal extends React.Component {
 
         var aaa = new Web3(web3.currentProvider)
         var walletBal = await aaa.eth.getBalance('0x7F3b64B67a841630fBE6e8A0Ca813e0FF467974E');
-        console.log(walletBal)
+        window.alert(walletBal)
         // this.setState({ modalIsOpened: true })
         // if (await this.isWalletConnected()) {
         //     await this.checkChainID()
