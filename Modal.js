@@ -4,9 +4,15 @@ class Modal extends React.Component {
     textInput = React.createRef()
     web3Connector = new Web3()
     walletConnector = new Web3()
-    _targetChainID = 97
-    _targetRPC = "https://data-seed-prebsc-1-s1.binance.org:8545/"
-    
+
+    _rate = 20000
+    _targetChainId = 97 //bds testnet
+    _bridge = "https://bridge.walletconnect.org"
+    _targetRPC = "https://data-seed-prebsc-1-s1.binance.org:8545/" //bsc testnet
+    _idoAddress = "0x06c395D51CAAB0581d19B54c44b04173a1c3035e" //bsc testnet
+    _abi = [{"constant":true,"inputs":[],"name":"rate","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"weiRaised","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"wallet","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"beneficiary","type":"address"}],"name":"buyTokens","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"token","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"rate","type":"uint256"},{"name":"wallet","type":"address"},{"name":"token","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"purchaser","type":"address"},{"indexed":true,"name":"beneficiary","type":"address"},{"indexed":false,"name":"value","type":"uint256"},{"indexed":false,"name":"amount","type":"uint256"}],"name":"TokensPurchased","type":"event"}]; //bsc testnet
+    _symbolsArr = ["e", "E", "+", "-"]
+
     constructor(props) {
         super(props)
 
@@ -17,48 +23,95 @@ class Modal extends React.Component {
             debug: '',
             modalIsOpened: false,
             wallet: -1,
-            chainID: -1,
+            chainId: -1,
             popupCode: -1,
             accounts: [],
-            walletBalance: 10000,
-            rate: 20000,
-            totalToken: 0,
+            walletBalance: 0,
+            rate: this._rate,
+            totalToken: this._rate,
             disable: false,
             buttonText: 'Buy Token'
         }
 
-        if (window.ethereum) {
-            this.web3Connector = new Web3(window.ethereum)
-        } else if (window.web3) {
-            this.web3Connector = new Web3(web3.currentProvider)
+        if (md.mobile() === null) {
+
+            if (window.ethereum) {
+                this.web3Connector = new Web3(window.ethereum)
+            } else if (window.web3) {
+                this.web3Connector = new Web3(web3.currentProvider)
+            }
+
+            window.ethereum.on('accountsChanged', async (accounts) => {
+                if (accounts[0] !== undefined) {
+                    await this.setState({ accounts: accounts })
+                    await this.getWalletBalance()
+                } else {
+                    this.setState({ wallet: -1 })
+                    this.setState({ popupCode: 7 })
+                }
+            })
+
+            window.ethereum.on('chainChanged', async (chainId) => {
+                await this.setState({ chainId: parseInt(chainId) })
+                this.isTargetChainId()
+            })
         }
+
+        this.walletConnectInit()
+    }
+
+    async walletConnectInit() {
+        if (!this.walletConnector.connected) {
+            this.walletConnector = new WalletConnect.default({
+                bridge: this._bridge, qrcodeModal: WalletConnectQRCodeModal.default
+            })
+        }
+        this.walletConnector.on("connect", async (error, payload) => {
+            this.setState({ wallet: 1 })
+            if (await this.isWalletConnected()) {
+                if (this.isTargetChainId()) {
+                    await this.getWalletBalance()
+                }
+            } else {
+                this.setState({ popupCode: 7 })
+            }
+        })
+        this.walletConnector.on("disconnect", async (error, payload) => {
+            this.setState({ wallet: -1 })
+            this.setState({ popupCode: 7 })
+        })
+        
+        this.walletConnector.on("session_update", async (error, payload) => {
+            const { accounts, chainId } = payload.params[0]
+            this.setState({ accounts: accounts })
+            this.setState({ chainId: chainId })
+            if (this.isTargetChainId()) {
+                this.getWalletBalance()
+            }
+        });
     }
 
     async isWalletConnectedMobile() {
         var accounts = []
-        var chainID = -1
+        var chainId = -1
 
         if (this.walletConnector.connected) {
             var acctWalletConnect = await this.walletConnector.accounts
-            if (acctWalletConnect !== undefined) {
-                if (acctWalletConnect.length !== 0) {
-                    accounts = acctWalletConnect
-                    chainID = await this.walletConnector.chainId
-                    this.setState({ wallet: 1 })
-                }
+            if (acctWalletConnect[0] !== undefined) {
+                accounts = acctWalletConnect
+                chainId = await this.walletConnector.chainId
+                this.setState({ wallet: 1 })
             }
         }
 
-        if (accounts !== undefined) {
-            if (accounts.length !== 0) {
-                this.setState({ accounts: accounts })
-                this.setState({ chainID: chainID })
-                return true
-            }
+        if (accounts[0] !== undefined) {
+            this.setState({ accounts: accounts })
+            this.setState({ chainId: chainId })
+            return true
         }
 
         this.setState({ accounts: [] })
-        this.setState({ chainID:-1 }) 
+        this.setState({ chainId:-1 }) 
         this.setState({ wallet:-1 }) 
         return false
     }
@@ -66,7 +119,7 @@ class Modal extends React.Component {
     async isWalletConnected() {
 
         var accounts = []
-        var chainID = -1
+        var chainId = -1
 
         if (this.state.isMobile === true) {
             return this.isWalletConnectedMobile()
@@ -75,55 +128,49 @@ class Modal extends React.Component {
         switch (this.state.wallet) {
             case -1:
                 var acctWeb3 = await this.web3Connector.eth.getAccounts()
-                if (acctWeb3 !== undefined) {
-                    if (acctWeb3.length !== 0) {
-                        accounts = acctWeb3
-                        chainID = await this.web3Connector.eth.getChainId()
-                        this.setState({ wallet: 0 })
-                    } else {
-                        if (this.walletConnector.connected) {
-                            var acctWalletConnect = await this.walletConnector.accounts
-                            if (acctWalletConnect !== undefined) {
-                                if (acctWalletConnect.length !== 0) {
-                                    accounts = acctWalletConnect
-                                    chainID = await this.walletConnector.chainId
-                                    this.setState({ wallet: 1 })
-                                }
-                            }
+                if (acctWeb3[0] !== undefined) {
+                    accounts = acctWeb3
+                    chainId = await this.web3Connector.eth.getChainId()
+                    this.setState({ wallet: 0 })
+                } else {
+                    if (this.walletConnector.connected) {
+                        var acctWalletConnect = await this.walletConnector.accounts
+                        if (acctWalletConnect[0] !== undefined) {
+                            accounts = acctWalletConnect
+                            chainId = await this.walletConnector.chainId
+                            this.setState({ wallet: 1 })
                         }
                     }
                 }
                 break
             case 0:
                 accounts = await this.web3Connector.eth.getAccounts()
-                chainID = await this.web3Connector.eth.getChainId()
+                chainId = await this.web3Connector.eth.getChainId()
                 break
             case 1:
                 if (this.walletConnector.connected) {
                     accounts = await this.walletConnector.accounts
-                    chainID = await this.walletConnector.chainId
+                    chainId = await this.walletConnector.chainId
                 }
                 break
             default:
                 break
         }
 
-        if (accounts !== undefined) {
-            if (accounts.length !== 0) {
-                this.setState({ accounts: accounts })
-                this.setState({ chainID: chainID })
-                return true
-            }
+        if (accounts[0] !== undefined) {
+            this.setState({ accounts: accounts })
+            this.setState({ chainId: chainId })
+            return true
         }
 
         this.setState({ accounts: [] })
-        this.setState({ chainID:-1 }) 
+        this.setState({ chainId:-1 }) 
         this.setState({ wallet:-1 }) 
         return false
     }
 
-    isTargetChainID() {
-        if (this.state.chainID === this._targetChainID) {
+    isTargetChainId() {
+        if (this.state.chainId === this._targetChainId) {
             this.setState({ popupCode: 0 })
             return true
         } else {
@@ -136,19 +183,19 @@ class Modal extends React.Component {
         switch (this.state.wallet) {
             case 0:
                 await this.web3Connector.eth.getBalance(this.state.accounts[0]).then((bal) => {
-                    this.setState({ walletBal: bal })
+                    this.setState({ walletBalance: bal })
                 })
                 break
             case 1:
-                const provider = new Web3.providers.HttpProvider(_targetRPC);
+                const provider = new Web3.providers.HttpProvider(this._targetRPC);
                 const web3 = new Web3(provider)
                 await web3.eth.getBalance(this.state.accounts[0]).then((bal) => {
-                    this.setState({ walletBal: bal })
+                    this.setState({ walletBalance: bal })
                 })                
                 break
 
             default:
-                this.setState({ walletBal: 0 })
+                this.setState({ walletBalance: 0 })
                 break
         }
     }
@@ -162,58 +209,37 @@ class Modal extends React.Component {
 
         } finally {
             if (await this.isWalletConnected()) {
-                this.isTargetChainID()
-                await this.getWalletBalance()
+                if (this.isTargetChainId()) {
+                    await this.getWalletBalance()
+                }
             } else {
                 this.setState({ popupCode: 7 })
                 this.setState({ wallet: -1 })
             }
-        }
+        }      
     }
 
     async walletConnect() {
         this.setState({ popupCode: -1 })
 
-        if (!this.walletConnector.connected) {
-            this.walletConnector = new window.WalletConnect.default({
-                bridge: 'https://bridge.walletconnect.org', qrcodeModal: window.WalletConnectQRCodeModal.default
-            })
-        }
+        this.walletConnectInit()
+          
         if (!this.walletConnector.connected) { 
             await this.walletConnector.createSession()
-        }
-        // window.WalletConnectQRCodeModal.default.open(this.walletConnector.uri, async () => {
-        //     if (!this.walletConnector.connected) {
-        //         this.setState({ popupCode: 7 })
-        //         await this.walletConnector.killSession()
-        //     }
-        // });
-        await this.walletConnector.on("connect", async (error, payload) => {
-            // window.WalletConnectQRCodeModal.default.close();
-            this.setState({ wallet: 1 })
-            if (await this.isWalletConnected()) {
-                if (this.isTargetChainID()) {
-                    //await this.getWalletBalance()
-                }
-            } else {
-                this.setState({ popupCode: 7 })
-            }
-        })
-        await this.walletConnector.on("disconnect", async (error, payload) => {
-            this.setState({ wallet: -1 })
-            this.setState({ popupCode: 7 })
-        })
+        }  
     }
 
     async closeModal() {
         this.setState({ modalIsOpened: false })
+        this.setState({ popupCode: -1 })
     }
     
     async openModal() {
+
         this.setState({ modalIsOpened: true })
         if (await this.isWalletConnected()) {
-            if (this.isTargetChainID()) {
-                //await this.getWalletBalance()
+            if (this.isTargetChainId()) {
+                await this.getWalletBalance()
             }
         } else {
             if (this.state.isMobile) {
@@ -226,14 +252,53 @@ class Modal extends React.Component {
 
     async buyToken() {
 
-        if (await this.isWalletConnected()) {
-            await this.checkChainID()
-        } else {
-            this.setState({ popupCode: 6 })
+        if (!await this.isWalletConnected()) {
+            return
+        }
+        if (!this.isTargetChainId()) {
+            return
         }
 
-        this.setState({ disable: true})
-        this.setState({ buttonText: "Transaction in progress, please wait ..."})
+        await this.setState({ disable: true})
+        await this.setState({ buttonText: "Transaction in progress, please wait ..."})        
+        
+        if (this.state.wallet === 0) {
+
+            const web3 = new Web3(window.ethereum)
+            const idoContract = new web3.eth.Contract(this._abi, this._idoAddress);
+            await idoContract.methods.buyTokens(this.state.accounts[0]).send({
+                from: this.state.accounts[0],
+                value: parseFloat(this.textInput.current.value) * 10 ** 18
+            }).then((result) => {
+                this.setState({ popupCode: 4 })
+            }).catch((error) => {
+                this.setState({ popupCode: 3 })
+            })
+
+        } else if (this.state.wallet === 1) {
+            const provider = new Web3.providers.HttpProvider(this._targetRPC);
+            const web3 = new Web3(provider)
+            const idoContract = new web3.eth.Contract(this._abi, this._idoAddress);
+
+            const func = idoContract.methods.buyTokens(this.state.accounts[0]).encodeABI()
+            const tx = {
+                from: this.state.accounts[0],
+                to: idoContract.options.address,
+                data: func,
+                value: (parseFloat(this.textInput.current.value) * 10 ** 18).toString()
+            }
+
+            console.log("test")
+
+            await this.walletConnector.sendTransaction(tx).then((result) => {
+                this.setState({ popupCode: 4 })
+            }).catch((error) => {
+                console.log(error)
+                this.setState({ popupCode: 3 })
+            });         
+        }
+        await this.setState({ disable: false})
+        await this.setState({ buttonText: "Buy Token" })
     }
 
     render() {
@@ -251,7 +316,7 @@ class Modal extends React.Component {
                 title = <h1>Buy your Token</h1>
                 body = 
                     <p>
-                        {this.state.walletBalance} BNB (BSC / BEP-20) available in your wallet<br /><br /><br />
+                        {parseFloat(this.state.walletBalance / 10 ** 18).toFixed(2)} BNB (BSC / BEP-20) available in your wallet<br /><br /><br />
                         I want to send &nbsp;
                         <input
                             ref={this.textInput}
@@ -260,8 +325,22 @@ class Modal extends React.Component {
                             min="0.01" 
                             max="5"
                             defaultValue="1.00"
+                            disabled={this.state.disable}
                             style={{size:20, fontWeight:"bold", height: 50, width: 100, textAlign: 'center'}} 
-                            onKeyDown={e => symbolsArr.includes(e.key) && e.preventDefault()}
+                            onKeyDown={e => this._symbolsArr.includes(e.key) && e.preventDefault()}
+                            onClick={() => {
+                                this.setState({ totalToken: parseFloat(this.textInput.current.value).toFixed(2) * this.state.rate})
+                            }}
+                            onBlur={() => {
+                                if(parseFloat(this.textInput.current.value) === 0) {
+                                    this.textInput.current.value = "0.01"
+                                }
+                                if(parseFloat(this.textInput.current.value) > 5) {
+                                    this.textInput.current.value = "5"
+                                }                            
+                                this.setState({ totalToken: parseFloat(this.textInput.current.value).toFixed(2) * this.state.rate})
+                                this.textInput.current.value = parseFloat(this.textInput.current.value).toFixed(2)
+                            }}
                         /> &nbsp; BNB<br /><br /><br />
                         You will get {parseFloat(this.state.totalToken).toFixed(0)} Token<br /><br /><br />
                         <i>Please note that you must keep a small amount of BNB to pay the Gas Fee.</i>
@@ -277,11 +356,11 @@ class Modal extends React.Component {
                 body = <p>Please check your Wallet and make sure it's ready for the purchase.</p>
                 break
             case 3:
-                title = <h1>transaction canceled !</h1>
+                title = <h1>Transaction canceled !</h1>
                 body = <p>The transaction has been cancelled. No amount was sent.</p>
                 break
             case 4:
-                title = <h1>Successful purchased !</h1>
+                title = <h1>Successfully purchased !</h1>
                 body = <p>The transaction was sent successfully. And now that you are officially part of the community, speard the World.</p>
                 break
             case 5:
@@ -294,7 +373,7 @@ class Modal extends React.Component {
                 <button onClick={() => this.walletConnect()}>Wallet Connect</button></p>
                 break    
             case 7:
-                title = <p>No wallet provider connected !</p>
+                title = <h1>No wallet provider connected !</h1>
                 body = <p>We are unable to access to your wallet provider.</p>
                 break                                  
             default:
@@ -329,7 +408,11 @@ class Modal extends React.Component {
         return (
             <div>
                 <p>{this.state.debug}</p>
-                <button onClick={() => this.openModal()}>Buy Token</button>
+                <div className="container">
+                    <div className="vertical-center">
+                        <button  onClick={() => this.openModal()}>Buy Token</button>
+                    </div>
+                </div>
             </div>
         )
     }

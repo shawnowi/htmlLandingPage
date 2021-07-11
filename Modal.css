@@ -70,3 +70,18 @@
   #cancelBtn {
     background-color: crimson;
   }
+
+.container {
+  height: 200px;
+  position: relative;
+  border: 0px solid green;
+}
+
+.vertical-center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 45%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
