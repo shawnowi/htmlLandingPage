@@ -260,7 +260,7 @@ class Modal extends React.Component {
         }
 
         await this.setState({ disable: true})
-        await this.setState({ buttonText: "Transaction in progress, please wait ..."})        
+        await this.setState({ buttonText: "transaction in progress, please wait ..."})        
         
         if (this.state.wallet === 0) {
 
@@ -309,14 +309,14 @@ class Modal extends React.Component {
 
         switch (this.state.popupCode) {
             case -1:
-                title = <h1>Connecting to your wallet !</h1>
+                title = <h1>Connecting to your <br /> Wallet Provider !!</h1>
                 body = <p>Please wait ...</p>
                 break    
             case 0:
-                title = <h1>Buy your Token</h1>
+                title = <h1>Buy your SHIBALANCE</h1>
                 body = 
                     <p>
-                        {parseFloat(this.state.walletBalance / 10 ** 18).toFixed(2)} BNB (BSC / BEP-20) available in your wallet<br /><br /><br />
+                        {parseFloat(this.state.walletBalance / 10 ** 18).toFixed(2)} BNB available in your wallet<br /><br />
                         I want to send &nbsp;
                         <input
                             ref={this.textInput}
@@ -326,7 +326,7 @@ class Modal extends React.Component {
                             max="5"
                             defaultValue="1.00"
                             disabled={this.state.disable}
-                            style={{size:20, fontWeight:"bold", height: 50, width: 100, textAlign: 'center'}} 
+                            style={{size:28, fornName:"Century Gothic", fontWeight:"bold", height: 35, width: 60, textAlign: 'center'}} 
                             onKeyDown={e => this._symbolsArr.includes(e.key) && e.preventDefault()}
                             onClick={() => {
                                 this.setState({ totalToken: parseFloat(this.textInput.current.value).toFixed(2) * this.state.rate})
@@ -341,31 +341,23 @@ class Modal extends React.Component {
                                 this.setState({ totalToken: parseFloat(this.textInput.current.value).toFixed(2) * this.state.rate})
                                 this.textInput.current.value = parseFloat(this.textInput.current.value).toFixed(2)
                             }}
-                        /> &nbsp; BNB<br /><br /><br />
-                        You will get {parseFloat(this.state.totalToken).toFixed(0)} Token<br /><br /><br />
-                        <i>Please note that you must keep a small amount of BNB to pay the Gas Fee.</i>
+                        /> &nbsp; BNB<br /><br />
+                        You will get {parseFloat(this.state.totalToken).toFixed(0)} SHIBALANCE Token<br /><br />
+                        <i>Note: please keep some BNB to pay the Gas Fee.</i>
                     </p>
-                footer = <button disabled={this.state.disable} style={{width: 500}} onClick={() => {this.buyToken();}}>{this.state.buttonText}</button>
+                footer = <button disabled={this.state.disable} style={{width: 380}} onClick={() => {this.buyToken();}}>{this.state.buttonText}</button>
                 break
             case 1:
-                title = <h1>Wrong network selected !</h1>;
-                body = <p>You must use BSC (Binance Smart Chain) Testnet network to connect to the website.</p>
-                break
-            case 2:
-                title = <h1>There is problem accessing your Wallet !</h1>
-                body = <p>Please check your Wallet and make sure it's ready for the purchase.</p>
+                title = <h1>Wrong Network Selected !!</h1>;
+                body = <p>You must use BSC (Binance Smart Chain) <br /> Mainnet Network to connect to the website.</p>
                 break
             case 3:
-                title = <h1>Transaction canceled !</h1>
-                body = <p>The transaction has been cancelled. No amount was sent.</p>
+                title = <h1>Transaction Cancelled !!</h1>
+                body = <p>The transaction has been cancelled. <br />No BNB amount was sent.</p>
                 break
             case 4:
-                title = <h1>Successfully purchased !</h1>
-                body = <p>The transaction was sent successfully. And now that you are officially part of the community, speard the World.</p>
-                break
-            case 5:
-                title = <h1>There is some problem with your wallet !</h1>
-                body = <p>Please check and make sure that you logon to your wallet and ready for transaction.</p>
+                title = <h1>Successfully Purchased !!</h1>
+                body = <p>The transaction was sent successfully. <br /><br /> Now that you are officially part of the <br /> SHIBALANCE community! </p>
                 break
             case 6:
                 title = ""
@@ -373,7 +365,7 @@ class Modal extends React.Component {
                 <button onClick={() => this.walletConnect()}>Wallet Connect</button></p>
                 break    
             case 7:
-                title = <h1>No wallet provider connected !</h1>
+                title = <h1>Wallet Provider <br /> is not connected !!</h1>
                 body = <p>We are unable to access to your wallet provider.</p>
                 break                                  
             default:
